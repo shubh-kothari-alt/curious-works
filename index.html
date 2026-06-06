@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Curious Works — One Partner. Multiple Solutions. Complete Business Support." />
+  <title>Curious Works</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.9/dist/lenis.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      /* CuriousWorks Brand Palette */
+      --bg:         #ffffff; /* Crisp white for high contrast */
+      --bg-warm:    #f8f9fa; /* Subtle gray for marquees/bands */
+      --bg-card:    #ffffff;
+      --surface:    #ffffff;
+      --border:     rgba(26, 34, 71, 0.08);
+      --border-med: rgba(26, 34, 71, 0.15);
+      
+      /* Logo Colors */
+      --ink:        #1B2045; /* Logo Navy Blue */
+      --gold:       #E86A33; /* Logo Vibrant Orange (Replaces the old gold/graphite) */
+      --green:      #1A7B42; /* Logo Forest Green */
+      
+      --text:       #1B2045; /* Navy for primary text */
+      --text-soft:  rgba(27, 32, 69, 0.7);
+      --text-mute:  rgba(27, 32, 69, 0.4);
+      --cream:      #f4f4f2;
+      
+      --f-display: 'Playfair Display', Georgia, serif;
+      --f-sans:    'Jost', sans-serif;
+      --f-mono:    'DM Mono', monospace;
+
+      --ease-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-inout:  cubic-bezier(0.87, 0, 0.13, 1);
+
+      --pad-x:       clamp(24px, 6vw, 100px);
+      --pad-section: clamp(80px, 12vw, 180px);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--bg); scroll-behavior: auto; }
+    body {
+      font-family: var(--f-sans);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+    ::selection { background: var(--gold); color: #fff; }
+    @media (hover: none) { body { cursor: auto; } }
+
+    /* ── CURSOR ── */
+    #cur-dot, #cur-ring {
+      position: fixed; border-radius: 50%; pointer-events: none;
+      z-index: 9999; transform: translate(-50%,-50%); will-change: left,top;
+      
+      /* The magic property that inverts colors dynamically */
+      mix-blend-mode: difference; 
+    }
+    
+    #cur-dot  { 
+      width: 5px; height: 5px; 
+      /* Base must be white for 'difference' to invert properly */
+      background: #ffffff; 
+      transition: background .2s; 
+    }
+    
+    #cur-ring {
+      width: 34px; height: 34px;
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      transition: width .5s var(--ease-expo), height .5s var(--ease-expo), border-color .4s;
+    }
+    
+    body.c-hover #cur-ring { 
+      width: 52px; height: 52px; 
+      border-color: #ffffff; 
+    }
+    
+    body.c-hover #cur-dot  { 
+      background: #ffffff; 
+    }
+    
+    @media (hover:none) { #cur-dot,#cur-ring { display:none; } }
+
+    /* ── PROGRESS ── */
+    #progress {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: var(--gold); z-index: 9001;
+      transform-origin: left; transform: scaleX(0);
+    }
+
+    /* ── PAGE OVERLAY ── */
+    #page-overlay {
+      position: fixed; inset: 0; z-index: 8000;
+      background: var(--bg); transform: scaleY(0);
+      transform-origin: bottom; pointer-events: none;
+    }
+
+    /* ── PRELOADER ── */
+    #preloader {
+      position: fixed; inset: 0; z-index: 9000;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 32px;
+    }
+    .pl__mark {
+      font-family: var(--f-display);
+      font-size: clamp(32px, 5vw, 60px);
+      font-weight: 400; letter-spacing: 0.02em;
+      overflow: hidden;
+    }
+    .pl__mark span { display: inline-block; transform: translateY(110%); }
+    .pl__line-wrap {
+      width: clamp(100px, 14vw, 180px); height: 1px;
+      background: var(--border); position: relative; overflow: hidden;
+    }
+    .pl__line {
+      position: absolute; inset: 0;
+      background: var(--gold); transform: scaleX(0); transform-origin: left;
+    }
+    .pl__num {
+      position: absolute; bottom: 28px; right: 28px;
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.12em; color: var(--text-mute);
+    }
+
+    /* ── NAV (Always Light) ── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 800;
+      height: 68px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 var(--pad-x);
+      background: var(--bg); /* Forces the permanent light background */
+      color: var(--text);    /* Forces the permanent dark text */
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav__logo {
+      font-family: var(--f-display); font-size: 19px; font-weight: 400;
+      letter-spacing: 0.03em; display: flex; align-items: center; gap: 8px;
+    }
+    .nav__dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gold); animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+    .nav__links { display: flex; align-items: center; gap: clamp(20px,3vw,44px); }
+    .nav__link {
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-soft); transition: color .3s;
+    }
+    .nav__link:hover { color: var(--text); }
+    .nav__ham {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 28px; height: 28px;
+      background: none; border: none; cursor: none;
+    }
+    .nav__ham span { display: block; height: 1px; background: var(--text); transition: transform .4s var(--ease-expo), opacity .3s; }
+    body.menu-open .nav__ham span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    body.menu-open .nav__ham span:nth-child(2) { opacity: 0; }
+    body.menu-open .nav__ham span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* Mobile menu */
+    #mobile-menu {
+      position: fixed; inset: 0; z-index: 790; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px;
+      clip-path: inset(0 0 100% 0); transition: clip-path .7s var(--ease-inout);
+    }
+    body.menu-open #mobile-menu { clip-path: inset(0 0 0% 0); }
+    .mob-link {
+      font-family: var(--f-display); font-size: clamp(32px, 9vw, 56px);
+      font-weight: 400; color: var(--text-soft); transition: color .3s;
+    }
+    .mob-link:hover { color: var(--text); }
+
+/* Priority Card Highlight */
+.svc-panel.card-priority {
+  border: 1px solid var(--gold);
+  background: rgba(27, 32, 69, 0.95); /* Slightly darker ink for contrast */
+  box-shadow: 0 -20px 80px rgba(232, 106, 51, 0.15); /* Gold tinted shadow */
+}
+.svc-panel.card-priority .svc-panel__tag {
+  border-color: rgba(232, 106, 51, 0.4); /* Gold borders for tags */
+}
+
+    /* ══════════════════════════════════════
+       HERO — Spacious, editorial, cinematic
+    ══════════════════════════════════════ */
+    #hero {
+      background: var(--ink); /* Deep obsidian */
+      position: relative; width: 100%; height: 100svh; min-height: 620px;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 0 var(--pad-x);
+      overflow: hidden;
+    }
+
+    /* Full-bleed globe video */
+    /* Full-bleed cinematic video */
+#hero-video {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.45; /* Lowered slightly for maximum text contrast */
+  filter: grayscale(20%) contrast(110%); /* Adds a moody, editorial color grade */
+  pointer-events: none;
+}
+
+    /* Gradient overlay — left fade for text readability */
+    #hero::after {
+      content: ''; position: absolute; inset: 0; z-index: 1;
+      background: 
+        linear-gradient(to right, rgba(14,12,9,0.88) 0%, rgba(14,12,9,0.4) 55%, transparent 100%),
+        linear-gradient(to top, rgba(14,12,9,0.6) 0%, transparent 40%);
+    }
+
+    .hero__inner {
+      position: relative; z-index: 2;
+      max-width: 680px;
+    }
+
+    .hero__h1 {
+      font-family: var(--f-display);
+      font-size: clamp(48px, 8.5vw, 130px);
+      font-weight: 400; line-height: 0.95; letter-spacing: -0.01em;
+      color: #f5f0e8;
+    }
+    .hero__h1 .ln { overflow: hidden; display: block; }
+    .hero__h1 .ln-inner { display: block; transform: translateY(110%); }
+    .hero__h1 em { font-style: italic; color: var(--gold-pale); }
+
+    .hero__cta {
+      margin-top: 52px;
+      display: inline-flex; align-items: center; gap: 14px;
+      font-family: var(--f-mono); font-size: 10.5px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--bg); opacity: 0;
+      transition: gap .4s var(--ease-expo);
+    }
+    .hero__cta:hover { gap: 24px; }
+    .hero__cta-line { width: 32px; height: 1px; background: var(--bg); transition: width .4s var(--ease-expo); }
+    .hero__cta:hover .hero__cta-line { width: 52px; }
+
+    .hero__scroll {
+      position: absolute; bottom: 36px; left: var(--pad-x); z-index: 2;
+      display: flex; align-items: center; gap: 14px; opacity: 0;
+    }
+    .hero__scroll-lbl {
+      font-family: var(--f-mono); font-size: 9px;
+      letter-spacing: 0.22em; text-transform: uppercase; color: rgba(240,232,216,0.35);
+    }
+    .hero__scroll-track { width: 44px; height: 1px; background: rgba(240,232,216,0.12); position: relative; overflow: hidden; }
+    .hero__scroll-track::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 1px;
+      background: var(--gold-pale); animation: slide 2s ease-in-out infinite;
+    }
+    @keyframes slide { 0%{left:-100%} 100%{left:100%} }
+
+    /* ── MARQUEE ── */
+    .marquee-band {
+      background: var(--ink);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      overflow: hidden; padding: 13px 0;
+    }
+    .marquee-track {
+      display: flex; white-space: nowrap;
+      animation: marquee 32s linear infinite;
+    }
+    .marquee-track span {
+      font-family: var(--f-mono); font-size: 11px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold); padding: 0 24px; flex-shrink: 0;
+    }
+    .marquee-track .sep { color: var(--gold); padding: 0 4px; }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ══════════════════════════════════════
+       ABOUT
+    ══════════════════════════════════════ */
+    #about {
+      padding: var(--pad-section) var(--pad-x);
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: clamp(48px, 8vw, 140px);
+      align-items: center;
+    }
+    .about__tag {
+      font-family: var(--f-mono); font-size: 14px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgb(100, 81, 81); margin-bottom: 32px;
+    }
+    .about__h2 {
+      font-family: var(--f-display);
+      font-size: clamp(40px, 5vw, 76px);
+      font-weight: 400; line-height: 1.08; letter-spacing: 0.01em;
+      margin-bottom: 52px;
+    }
+    .about__h2 em { font-style: italic; color: black; }
+    .about__link {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: var(--f-mono); font-size: 13px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold);
+      transition: gap .35s var(--ease-expo);
+    }
+    .about__link:hover { gap: 22px; }
+    .about__link-line { width: 28px; height: 1px; background: var(--gold); transition: width .35s var(--ease-expo); }
+    .about__link:hover .about__link-line { width: 44px; }
+
+    .about__body {
+      font-family: var(--f-sans); font-size: clamp(14px, 1.25vw, 18px);
+      font-weight: 300; line-height: 1.9; color: var(--text-soft); margin-bottom: 48px;
+    }
+    .about__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+    .stat { background: var(--cream); padding: 32px 24px; }
+    .stat__n {
+      font-family: var(--f-display); font-size: clamp(42px, 5vw, 68px);
+      font-weight: 400; line-height: 1; color: var(--text); margin-bottom: 10px;
+    }
+    .stat__n sup { font-size: 0.45em; color: var(--gold); }
+    .stat__l {
+      font-family: var(--f-mono); font-size: 12px;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--text);
+    }
+
+    /* ══════════════════════════════════════
+       SERVICES — Split Stacking Deck
+    ══════════════════════════════════════ */
+    #services {
+      background: var(--bg); /* Crisp alabaster background */
+    }
+
+    .svc__wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      min-height: 100vh;
+    }
+
+    /* ── LEFT PANEL (Light Mode, Sticky) ── */
+    .svc__left {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(48px, 8vw, 120px) clamp(32px, 5vw, 80px) clamp(48px, 8vw, 120px) var(--pad-x);
+      border-right: none; 
+    }
+
+    .svc__tag {
+      font-family: var(--f-mono); font-size: 14px;
+      letter-spacing: 0.26em; text-transform: uppercase;
+      color: rgb(100, 81, 81); margin-bottom: 32px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .svc__tag::before { 
+      content: ''; display: block; width: 24px; height: 1px; 
+      background: rgba(15, 15, 15, 0.2); 
+    }
+
+    /* Massive Editorial Typography */
+    .svc__h2 {
+      font-family: var(--f-display);
+      font-size: clamp(60px, 9vw, 140px);
+      font-weight: 400; line-height: 0.85; 
+      letter-spacing: -0.02em; color: var(--text); 
+      margin-bottom: 40px;
+    }
+    .svc__h2 em { color: var(--gold); font-weight: 300; }
+
+    .svc__left-body {
+      font-family: var(--f-sans); font-size: clamp(15px, 1.3vw, 17px);
+      font-weight: 300; line-height: 1.8; color: var(--text-soft); 
+      max-width: 340px; margin-bottom: 64px;
+    }
+
+    /* ── Editorial Navigation Index ── */
+    .svc__dots { display: flex; flex-direction: column; gap: 16px; }
+    
+    .svc__dot-row {
+      display: flex; align-items: center; gap: 0px; /* Starts tight */
+      cursor: none; opacity: 0.3;
+      transition: opacity 0.5s ease, gap 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    
+    /* Reveal physics when active */
+    .svc__dot-row.active { opacity: 1; gap: 16px; }
+
+    /* The expanding line */
+    .svc__dot { 
+      width: 0px; height: 1px; background: var(--text); 
+      border-radius: 0; /* Removing the circle shape */
+      transition: width 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .svc__dot-row.active .svc__dot { width: 40px; }
+
+    .svc__dot-label { 
+      font-family: var(--f-mono); font-size: 14px; 
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--text); 
+      transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    /* ── RIGHT PANEL (The Deck) ── */
+    .svc__right {
+      padding: 10vh clamp(32px, 5vw, 80px) 20vh 0; /* Padding so it breathes nicely */
+      position: relative;
+    }
+
+    /* Physical Stacking Cards */
+    .svc-panel {
+      position: sticky;
+      height: 65vh; /* Fixed height for stacking physics */
+      min-height: 480px;
+      background: var(--ink);
+      border-radius: clamp(24px, 4vw, 40px);
+      padding: clamp(40px, 5vw, 60px);
+      box-shadow: 0 -20px 80px rgba(0,0,0,0.08); /* Casts shadow upward onto the previous card */
+      margin-bottom: 6vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      transition: transform 0.6s var(--ease-expo), filter 0.6s;
+      transform-origin: top center;
+      opacity: 1; 
+    }
+
+    /* Stacking offsets — creates the layered 'lip' effect */
+    .svc-panel:nth-child(1) { top: 10vh; z-index: 1; }
+    .svc-panel:nth-child(2) { top: 13vh; z-index: 2; }
+    .svc-panel:nth-child(3) { top: 16vh; z-index: 3; }
+    .svc-panel:nth-child(4) { top: 19vh; z-index: 4; }
+    .svc-panel:nth-child(5) { top: 22vh; z-index: 5; }
+
+    /* Cinematic Noise on cards */
+    .svc-panel::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      z-index: 0; pointer-events: none;
+    }
+
+    .svc-panel__inner { 
+      position: relative; z-index: 1; 
+      max-width: 100%; 
+      display: flex; flex-direction: column; justify-content: center; height: 100%;
+    }
+
+    .svc-panel__num {
+      position: absolute; top: -20px; right: 0;
+      font-family: var(--f-display); font-size: clamp(80px, 10vw, 160px);
+      line-height: 0.8; letter-spacing: -0.05em;
+      color: rgba(255,255,255,0.03); pointer-events: none;
+    }
+
+    .svc-panel__title {
+      font-family: var(--f-display); font-size: clamp(32px, 3.5vw, 56px);
+      font-weight: 400; line-height: 1.05; color: #f4f4f2; margin-bottom: 24px;
+      margin-top: auto; 
+    }
+    .svc-panel__title em { font-style: italic; color: rgba(255,255,255,0.4); }
+
+    .svc-panel__desc {
+      font-family: var(--f-sans); font-size: clamp(14px, 1.2vw, 16px);
+      font-weight: 300; line-height: 1.8; color: rgba(255,255,255,0.6); margin-bottom: 40px;
+      max-width: 90%;
+    }
+
+    .svc-panel__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: auto; }
+    .svc-panel__tag {
+      font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.15);
+      padding: 8px 16px; border-radius: 100px; transition: all 0.4s ease;
+    }
+    .svc-panel:hover .svc-panel__tag { border-color: rgba(255,255,255,0.4); color: #fff; }
+
+    .svc-panel__cta {
+      display: inline-flex; align-items: center; gap: 14px;
+      font-family: var(--f-mono); font-size: 10.5px;
+      letter-spacing: 0.2em; text-transform: uppercase; color: #fff;
+      transition: gap .4s var(--ease-expo); margin-top: 40px;
+    }
+    .svc-panel__cta:hover { gap: 24px; }
+    .svc-panel__cta-line { width: 32px; height: 1px; background: #fff; transition: width .4s var(--ease-expo); }
+    .svc-panel__cta:hover .svc-panel__cta-line { width: 56px; }
+
+    .svc-panel__art {
+      position: absolute; bottom: -20px; right: -20px;
+      width: clamp(140px, 18vw, 240px); height: auto;
+      opacity: 0.05; transform: rotate(-15deg);
+      transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s;
+      pointer-events: none; z-index: 0;
+    }
+    .svc-panel__art * { stroke: #ffffff !important; stroke-width: 1.5px; } 
+    .svc-panel:hover .svc-panel__art { transform: rotate(0deg) scale(1.1) translate(-10px, -10px); opacity: 0.15; }
+
+    @media (max-width: 900px) {
+      
+      /* --- NAVBAR MOBILE FIX --- */
+      .nav__links { display: none !important; } /* Hides the text options */
+      .nav__ham { display: flex !important; }   /* Shows the hamburger icon */
+      /* ------------------------- */
+
+      .svc__wrapper { 
+        grid-template-columns: 1fr; 
+      }
+      .svc__left { 
+        position: relative; height: auto; 
+        padding: clamp(60px,10vw,100px) var(--pad-x) 40px; 
+      }
+      .svc__dots { display: none; }
+      .svc__right { padding: 0 var(--pad-x) 10vh; }
+      .svc-panel {
+        position: relative; top: 0 !important;
+        height: auto; min-height: 0; margin-bottom: 24px;
+        padding: 48px 32px; border-radius: 24px;
+      }
+      .svc-panel__num { font-size: 80px; top: -10px; right: -10px; }
+      .svc-panel__art { display: none; }
+    }
+
+    /* ══════════════════════════════════════
+       CONTACT — Full-Bleed Cinematic Void (Now Light)
+    ══════════════════════════════════════ */
+    #contact {
+      background: var(--bg); /* Swapped to light background */
+      padding: clamp(100px, 15vw, 200px) var(--pad-x);
+      display: flex; 
+      justify-content: center; 
+      position: relative;
+      overflow: hidden; 
+    }
+
+    /* 1. Cinematic Noise Texture */
+    #contact::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      z-index: 0; pointer-events: none;
+    }
+
+    /* 2. Ambient Sculptural Glow (Darkened for contrast on light bg) */
+    #contact::after {
+      content: ''; position: absolute;
+      width: 1000px; height: 1000px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(27, 32, 69, 0.03) 0%, transparent 60%);
+      top: -300px; left: -200px;
+      z-index: 0; pointer-events: none;
+    }
+
+    .contact__inner {
+      width: 100%;
+      max-width: 1400px; 
+      display: flex; flex-direction: column; gap: clamp(60px, 10vw, 100px);
+      position: relative; z-index: 1;
+    }
+
+    .contact__head { text-align: center; }
+
+    .contact__tag {
+      font-family: var(--f-mono); font-size: 14px;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--text-soft); margin-bottom: 24px;
+    }
+
+    .contact__h2 {
+      font-family: var(--f-display);
+      font-size: clamp(60px, 14vw, 240px);
+      font-weight: 400; line-height: 0.8;
+      letter-spacing: -0.03em; color: var(--ink); /* Navy text */
+    }
+    .contact__h2 em { font-style: italic; color: var(--gold); font-weight: 300; } /* Orange accent */
+
+    .contact__body {
+      display: grid; grid-template-columns: 1fr 280px;
+      gap: clamp(60px, 8vw, 120px); align-items: start;
+    }
+
+    .contact__form { display: flex; flex-direction: column; gap: 24px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+
+    /* 3. Architectural Form Interactions (Light Theme Fixes) */
+    .form-dark .form-field { 
+      border-bottom: 1px solid var(--border-med); /* Visible dark line */
+      position: relative;
+      padding: 28px 0 12px; 
+    }
+    
+    .form-dark .form-field::after {
+      content: ''; position: absolute; bottom: -1px; left: 0;
+      width: 100%; height: 1px; background: var(--ink); /* Navy line on focus */
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .form-dark .form-field:focus-within::after { transform: scaleX(1); }
+
+    .form-dark .form-field label { 
+      color: var(--text-soft); 
+      position: absolute; top: 30px; left: 0;
+      font-family: var(--f-mono); font-size: 12px;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      pointer-events: none; 
+      transition: transform .5s cubic-bezier(0.19, 1, 0.22, 1), font-size .5s, color .3s;
+    }
+    
+    .form-dark .form-field input, .form-dark .form-field textarea { 
+      color: var(--ink); background: transparent !important; /* Navy input text */
+      border: none !important; outline: none !important; box-shadow: none !important;
+      -webkit-appearance: none; width: 100%; position: relative; z-index: 1;
+      font-family: var(--f-sans); font-size: 18px; font-weight: 300;
+    }
+    .form-dark .form-field textarea { min-height: 40px; }
+    
+    /* Chrome Autofill fix for light themes */
+    .form-dark .form-field input:-webkit-autofill,
+    .form-dark .form-field textarea:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+      -webkit-text-fill-color: var(--ink) !important; transition: background-color 5000s ease-in-out 0s;
+    }
+    
+    .form-dark .form-field input:focus ~ label, .form-dark .form-field input:valid ~ label,
+    .form-dark .form-field textarea:focus ~ label, .form-dark .form-field textarea:valid ~ label {
+      transform: translateY(-26px); font-size: 8.5px; color: var(--ink);
+    }
+
+    .contact__submit-wrap { margin-top: 48px; }
+
+    /* 4. Liquid Pill Button Hover (Inverted for Light Mode) */
+    .contact__submit {
+      background: transparent;
+      border: 1px solid var(--border-med);
+      color: var(--ink); /* Navy text */
+      padding: 24px 56px;
+      font-family: var(--f-mono); font-size: 10.5px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      cursor: none; border-radius: 100px;
+      position: relative; overflow: hidden;
+      transition: color 0.4s ease, border-color 0.4s ease;
+      z-index: 1;
+    }
+    .contact__submit::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--ink); /* Floods with Navy on hover */
+      transform: translateY(101%); border-radius: 100px;
+      transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+      z-index: -1;
+    }
+    .contact__submit:hover { color: var(--bg); border-color: transparent; } /* Text turns white */
+    .contact__submit:hover::before { transform: translateY(0); border-radius: 0; }
+
+    /* Polished Detail Grid */
+    .contact__details-grid { display: flex; flex-direction: column; gap: 48px; padding-top: 24px; }
+    .c-detail { display: flex; flex-direction: column; gap: 10px; text-decoration: none; }
+    .c-detail-lbl {
+      font-family: var(--f-mono); font-size: 9px;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-mute);
+    }
+    .c-detail-val {
+      font-family: var(--f-sans); font-size: 18px; font-weight: 300;
+      color: var(--text-soft); transition: color 0.4s;
+    }
+    a.c-detail:hover .c-detail-val { color: var(--gold); } /* Changes to Orange on hover */
+
+    /* Mobile Breakpoints */
+    @media (max-width: 900px) {
+      .contact__body { grid-template-columns: 1fr; }
+      .contact__details-grid { 
+        flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 32px;
+        border-top: 1px solid var(--border); padding-top: 48px; margin-top: 24px;
+      }
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; gap: 24px; }
+      .contact__details-grid { flex-direction: column; }
+    }
+
+/* ══════════════════════════════════════
+   SECTION 5: TRUST SIGNALS
+══════════════════════════════════════ */
+#trust {
+  padding: var(--pad-section) var(--pad-x);
+  background: var(--bg-warm);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(48px, 8vw, 120px);
+  align-items: center;
+}
+
+/* New Image Container Styles */
+.trust__image {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  border-radius: 24px; /* Keeps the smooth, modern curves used on your other cards */
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(26, 34, 71, 0.05); /* Adds a very soft lift */
+}
+
+.trust__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+  transition: transform 0.8s var(--ease-expo);
+}
+
+/* Optional: Slight zoom effect on hover for that premium feel */
+.trust__image:hover img {
+  transform: scale(1.05);
+}
+
+/* Existing Testimonial Styles */
+.trust__quote { 
+  font-family: var(--f-display); 
+  font-size: clamp(24px, 3vw, 36px); 
+  line-height: 1.3; 
+  color: var(--ink); 
+  position: relative; 
+}
+.trust__quote::before { 
+  content: '“'; 
+  position: absolute; 
+  top: -40px; left: -20px; 
+  font-size: 80px; color: var(--gold); opacity: 0.2; 
+  font-family: serif;
+}
+.trust__author { 
+  font-family: var(--f-sans); 
+  font-size: 16px; font-weight: 500; 
+  margin-top: 32px; color: var(--text); 
+}
+.trust__author span { 
+  display: block; font-weight: 300; 
+  color: var(--text-soft); font-size: 14px; margin-top: 4px; 
+}
+
+/* Mobile responsive fix for the image */
+@media (max-width: 900px) {
+  #trust { grid-template-columns: 1fr; gap: 64px; }
+  .trust__quote::before { left: 0; }
+  .trust__image { min-height: 300px; } /* Slightly shorter on mobile */
+}
+/* ══════════════════════════════════════
+   SECTION 6 & 7: CTA & CAREERS BAND
+══════════════════════════════════════ */
+#bottom-cta {
+  padding: var(--pad-section) var(--pad-x);
+  background: var(--ink);
+  text-align: center;
+  color: var(--cream);
+}
+.cta__h2 { 
+  font-family: var(--f-display); 
+  font-size: clamp(40px, 6vw, 80px); 
+  line-height: 1.1; margin-bottom: 48px; 
+}
+.cta__h2 em { font-style: italic; color: var(--gold); font-weight: 300; }
+.cta__actions { 
+  display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; 
+}
+.cta__btn-primary, .cta__btn-secondary {
+  padding: 20px 48px;
+  border-radius: 100px;
+  font-family: var(--f-mono); font-size: 11px; 
+  letter-spacing: 0.2em; text-transform: uppercase;
+  transition: all 0.4s ease;
+  cursor: none;
+}
+.cta__btn-primary { background: var(--gold); color: #fff; border: 1px solid var(--gold); }
+.cta__btn-primary:hover { background: transparent; color: var(--gold); }
+.cta__btn-secondary { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.2); }
+.cta__btn-secondary:hover { border-color: var(--cream); }
+
+.careers-band {
+  background: var(--gold);
+  padding: 24px var(--pad-x);
+  text-align: center;
+}
+.careers-band a {
+  font-family: var(--f-mono); font-size: 12px; 
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: #fff; transition: opacity 0.3s;
+}
+.careers-band a:hover { opacity: 0.7; }
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  #trust { grid-template-columns: 1fr; gap: 64px; }
+  .trust__quote::before { left: 0; }
+}
+
+    /* ══════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════ */
+    #footer {
+      background: var(--ink); color: var(--cream);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: clamp(60px,8vw,120px) var(--pad-x) clamp(28px,4vw,48px);
+    }
+    .footer__top {
+      display: grid; grid-template-columns: 1.4fr repeat(3,1fr);
+      gap: clamp(28px,4vw,60px); margin-bottom: clamp(56px,7vw,96px);
+    }
+    .footer__logo {
+      font-family: var(--f-display); font-size: 22px; font-weight: 400;
+      letter-spacing: 0.03em; margin-bottom: 16px; color: var(--cream);
+    }
+    .footer__strapline {
+      font-family: var(--f-sans); font-size: 13px; font-weight: 300;
+      line-height: 1.85; color: rgba(240,235,224,0.4); max-width: 240px;
+    }
+    .footer__col-title {
+      font-family: var(--f-mono); font-size: 11px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(248, 248, 247, 0.918); margin-bottom: 20px;
+    }
+    .footer__col ul { display: flex; flex-direction: column; gap: 12px; }
+    .footer__col a {
+      font-family: var(--f-sans); font-size: 15px; font-weight: 300;
+      color: rgba(240,235,224,0.45); transition: color .3s;
+    }
+    .footer__col a:hover { color: var(--cream); }
+    .footer__bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer__copy, .footer__bottom a {
+      font-family: var(--f-mono); font-size: 12px;
+      letter-spacing: 0.1em; color: rgba(240,235,224,0.2);
+    }
+    .footer__bottom a:hover { color: rgba(240,235,224,0.5); }
+    .footer__bottom-links { display: flex; gap: 24px; }
+
+    /* ══════════════════════════════════════
+       MOBILE OVERRIDES (Responsive Fixes)
+    ══════════════════════════════════════ */
+    @media (max-width: 900px) {
+      /* Hero alignment */
+      .hero__h1 { font-size: clamp(46px, 12vw, 80px); }
+      .hero__inner { margin-top: -15vh; z-index: 10; pointer-events: none; }
+      
+      /* Global Grid resets */
+      #about { 
+        grid-template-columns: 1fr; 
+        gap: 48px; 
+        padding-top: 100px; 
+        padding-bottom: 40px; 
+      }
+      .svc__wrapper { grid-template-columns: 1fr; }
+      
+      /* 1. Un-stick the header so it scrolls away naturally */
+      .svc__left { 
+        position: relative; 
+        height: auto; 
+        padding: 100px var(--pad-x) 40px; 
+        border-bottom: none; 
+      }
+      .svc__h2 { font-size: clamp(48px, 12vw, 80px); margin-bottom: 24px; }
+      .svc__left-body { max-width: 100%; margin-bottom: 0; }
+      .svc__dots { display: none; }
+
+      .svc__right { padding: 0 var(--pad-x) 10vh; margin-top: 0; z-index: 2; }
+
+      /* 2. Tighten the stacking cards for short screens */
+      .svc-panel {
+        position: sticky; 
+        height: auto; 
+        min-height: 50vh; 
+        margin-bottom: 3vh;
+        padding: 40px 24px; 
+        border-radius: 20px;
+      }
+      
+      /* Tighter mobile stacking limits */
+      .svc-panel:nth-child(1) { top: 10vh; z-index: 1; }
+      .svc-panel:nth-child(2) { top: 12vh; z-index: 2; }
+      .svc-panel:nth-child(3) { top: 14vh; z-index: 3; }
+      .svc-panel:nth-child(4) { top: 16vh; z-index: 4; }
+      .svc-panel:nth-child(5) { top: 18vh; z-index: 5; }
+      .svc-panel:last-child { margin-bottom: 0; }
+
+      .svc-panel__num { font-size: 70px; top: 0px; right: 10px; opacity: 0.04; }
+      .svc-panel__title { font-size: 32px; }
+      .svc-panel__art { display: none; }
+      
+      /* Contact Section */
+      #contact { padding: clamp(60px, 10vw, 100px) var(--pad-x); }
+      .contact__body { grid-template-columns: 1fr; gap: 48px; }
+      .contact__details-grid { 
+        flex-direction: column; gap: 24px;
+        border-top: 1px solid rgba(255,255,255,0.08); 
+        padding-top: 40px; margin-top: 0px;
+      }
+      
+      /* Footer */
+      .footer__top { grid-template-columns: 1fr 1fr; }
+      
+    }
+
+    /* Extra small screens (Phones) */
+    @media (max-width: 600px) {
+      .hero__h1 { font-size: clamp(40px, 11vw, 60px); }
+      .form-row { grid-template-columns: 1fr; gap: 24px; }
+      .contact__submit { width: 100%; padding: 20px 0; } /* Full width button */
+      .footer__top { grid-template-columns: 1fr; gap: 40px; }
+      .footer__bottom { flex-direction: column; align-items: flex-start; gap: 16px; }
+
+    }
+
+  </style>
+</head>
+<body>
+
+<div id="cur-dot" aria-hidden="true"></div>
+<div id="cur-ring" aria-hidden="true"></div>
+<div id="progress" aria-hidden="true"></div>
+<div id="page-overlay" aria-hidden="true"></div>
+
+<!-- PRELOADER -->
+<div id="preloader" role="status" aria-label="Loading">
+  <p class="pl__mark">
+    <span>Curious</span><span style="font-style:italic;color:var(--gold)"> Works</span>
+  </p>
+  <div class="pl__line-wrap"><div class="pl__line" id="pl-bar"></div></div>
+  <span class="pl__num" id="pl-num">0%</span>
+</div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" aria-hidden="true">
+  <a href="about.html"      class="mob-link">About</a>
+  <a href="services.html"   class="mob-link">Services</a>
+  <a href="associates.html" class="mob-link">Associates</a>
+  <a href="careers.html"    class="mob-link">Careers</a>
+  <a href="contact.html"    class="mob-link">Contact</a>
+</div>
+
+<!-- NAV -->
+<header id="nav" role="banner">
+  <a href="index.html" class="nav__logo" aria-label="Curious Works Home">
+    <img src="logo curious works.jpeg" alt="CuriousWorks Logo" style="height: 36px; width: auto;">
+  </a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="about.html"      class="nav__link">About</a>
+    <a href="services.html"   class="nav__link">Services</a>
+    <a href="associates.html" class="nav__link">Associates</a>
+    <a href="careers.html"    class="nav__link">Careers</a>
+    <a href="contact.html"    class="nav__link">Contact</a>
+  </nav>
+  <button class="nav__ham" id="ham-btn" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<main>
+
+  <!-- ══════════ HERO ══════════ -->
+  <section id="hero" aria-labelledby="hero-h1">
+    <!-- 
+      Globe video — using a free Creative Commons revolving Earth embed.
+      Replace src with your own hosted video for production.
+    -->
+    
+    <!-- Inline Three.js canvas as video fallback / overlay -->
+    <video id="hero-video" autoplay loop muted playsinline aria-hidden="true">
+      <source src="video.mp4" type="video/mp4" />
+    </video>    
+    <div class="hero__inner">
+
+      <h1 class="hero__h1" id="hero-h1">
+        <span class="ln"><span class="ln-inner">One Partner.</span></span>
+        <span class="ln"><span class="ln-inner"><em>Multiple</em></span></span>
+        <span class="ln"><span class="ln-inner">Solutions.</span></span>
+      </h1>
+
+      <a href="services.html" class="hero__cta" aria-label="Explore our services">
+        <span class="hero__cta-line"></span>
+        Explore Services
+      </a>
+    </div>
+
+  </section>
+<br>
+  <!-- MARQUEE -->
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee-track">
+      <span>IT &amp; Digital Solutions</span><span class="sep">·</span>
+      <span>BPO &amp; KPO Outsourcing</span><span class="sep">·</span>
+      <span>Consulting &amp; Compliance</span><span class="sep">·</span>
+      <span>Co-Working Infrastructure</span><span class="sep">·</span>
+      <span>Digital Signatures &amp; PKI</span><span class="sep">·</span>
+      <span>Complete Business Support</span><span class="sep">·</span>
+      <span>IT &amp; Digital Solutions</span><span class="sep">·</span>
+      <span>BPO &amp; KPO Outsourcing</span><span class="sep">·</span>
+      <span>Consulting &amp; Compliance</span><span class="sep">·</span>
+      <span>Co-Working Infrastructure</span><span class="sep">·</span>
+      <span>Digital Signatures &amp; PKI</span><span class="sep">·</span>
+      <span>Complete Business Support</span><span class="sep">·</span>
+    </div>
+  </div>
+
+  <!-- ══════════ ABOUT ══════════ -->
+  <section id="about" aria-labelledby="about-h2">
+    <div class="about__left">
+      <p class="about__tag">01 — About</p>
+      <h2 class="about__h2" id="about-h2">
+        Built to<br/><em>simplify</em><br/>the complex.
+      </h2>
+      <a href="about.html" class="about__link" aria-label="Read our full story">
+        <span class="about__link-line"></span>
+        Read our story
+      </a>
+    </div>
+    <div class="about__right">
+      <p class="about__body">
+        We are a unified partner for businesses seeking digital 
+        transformation and operational excellence. By integrating 
+        technology, professional expertise, and modern infrastructure 
+        under one disciplined roof, we help organizations reduce costs 
+        and scale with momentum.
+      </p>
+      <div class="about__stats">
+        <div class="stat">
+          <p class="stat__n">500<sup>+</sup></p>
+          <p class="stat__l">Clients Served</p>
+        </div>
+        <div class="stat">
+          <p class="stat__n">5</p>
+          <p class="stat__l">Service Verticals</p>
+        </div>
+        <div class="stat">
+          <p class="stat__n">10+</p>
+          <p class="stat__l">Years Expertise</p>
+        </div>
+        <div class="stat">
+          <p class="stat__n">∞</p>
+          <p class="stat__l">Scale Potential</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SERVICES ══════════ -->
+  <section id="services" aria-labelledby="svc-h2">
+    <div class="svc__wrapper">
+
+      <!-- REPLACE your current .svc__left div with this -->
+      <div class="svc__left">
+        <p class="svc__tag">02 — Services</p>
+        <h2 class="svc__h2" id="svc-h2" style="font-size: clamp(48px, 6vw, 90px);">Everything Your Business Needs,<br/><em>Under One Roof</em></h2>
+        <p class="svc__left-body">
+          Five integrated verticals, one partner.
+          Scroll to explore everything we bring to your business.
+        </p>
+        <!-- Nav dots remain the same here -->
+        <nav class="svc__dots" aria-label="Service navigation">
+          <div class="svc__dot-row active" data-panel="0"><span class="svc__dot"></span><span class="svc__dot-label">IT &amp; Digital</span></div>
+          <div class="svc__dot-row" data-panel="1"><span class="svc__dot"></span><span class="svc__dot-label">BPO &amp; KPO</span></div>
+          <div class="svc__dot-row" data-panel="2"><span class="svc__dot"></span><span class="svc__dot-label">Consulting</span></div>
+          <div class="svc__dot-row" data-panel="3"><span class="svc__dot"></span><span class="svc__dot-label">Co-Working</span></div>
+          <div class="svc__dot-row" data-panel="4"><span class="svc__dot"></span><span class="svc__dot-label">PKI &amp; DSC</span></div>
+        </nav>
+      </div>
+
+      <!-- RIGHT — scrolling panels -->
+      <div class="svc__right" id="svc-right">
+
+        <article class="svc-panel" data-index="0" aria-label="IT & Digital Solutions">
+          <div class="svc-panel__inner">
+            <svg class="svc-panel__art" width="80" height="56" viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="40" cy="28" r="20" stroke="#d4b07a" stroke-width="1"/>
+              <circle cx="40" cy="28" r="32" stroke="#d4b07a" stroke-width="0.5"/>
+              <line x1="0" y1="28" x2="80" y2="28" stroke="#d4b07a" stroke-width="0.5"/>
+              <line x1="40" y1="0" x2="40" y2="56" stroke="#d4b07a" stroke-width="0.5"/>
+              <circle cx="40" cy="28" r="3" fill="#d4b07a"/>
+            </svg>
+            <span class="svc-panel__num">01</span>
+            <h3 class="svc-panel__title">IT &amp; <em>Digital</em><br/>Solutions</h3>
+            <p class="svc-panel__desc">End-to-end technology infrastructure, software development, cloud migration, and managed IT services tailored for modern businesses ready to scale with confidence.</p>
+            <div class="svc-panel__tags">
+              <span class="svc-panel__tag">Cloud Migration</span>
+              <span class="svc-panel__tag">Software Dev</span>
+              <span class="svc-panel__tag">Managed IT</span>
+              <span class="svc-panel__tag">Cybersecurity</span>
+              <span class="svc-panel__tag">Infrastructure</span>
+            </div>
+            <a href="services.html#it-digital" class="svc-panel__cta">
+              <span class="svc-panel__cta-line"></span>
+              Learn more
+            </a>
+          </div>
+        </article>
+
+        <article class="svc-panel" data-index="1" aria-label="BPO & KPO Outsourcing">
+          <div class="svc-panel__inner">
+            <svg class="svc-panel__art" width="80" height="56" viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="4" y="10" width="72" height="36" stroke="#d4b07a" stroke-width="1" rx="2"/>
+              <circle cx="20" cy="28" r="7" stroke="#d4b07a" stroke-width="0.8"/>
+              <line x1="34" y1="22" x2="70" y2="22" stroke="#d4b07a" stroke-width="0.8"/>
+              <line x1="34" y1="28" x2="58" y2="28" stroke="#d4b07a" stroke-width="0.8"/>
+              <line x1="34" y1="34" x2="64" y2="34" stroke="#d4b07a" stroke-width="0.8"/>
+            </svg>
+            <span class="svc-panel__num">02</span>
+            <h3 class="svc-panel__title">BPO &amp; <em>KPO</em><br/>Outsourcing</h3>
+            <p class="svc-panel__desc">Scalable business process and knowledge process outsourcing — from back-office operations to specialised research, analytics, and data management.</p>
+            <div class="svc-panel__tags">
+              <span class="svc-panel__tag">Back Office Ops</span>
+              <span class="svc-panel__tag">Data Analytics</span>
+              <span class="svc-panel__tag">Research</span>
+              <span class="svc-panel__tag">Finance &amp; Accounting</span>
+            </div>
+            <a href="services.html#bpo-kpo" class="svc-panel__cta">
+              <span class="svc-panel__cta-line"></span>
+              Learn more
+            </a>
+          </div>
+        </article>
+
+        <article class="svc-panel" data-index="2" aria-label="Consulting & Compliance">
+          <div class="svc-panel__inner">
+            <svg class="svc-panel__art" width="80" height="56" viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <polyline points="4,46 22,24 38,32 56,14 76,20" stroke="#d4b07a" stroke-width="1" fill="none"/>
+              <circle cx="22" cy="24" r="3" fill="#d4b07a"/>
+              <circle cx="38" cy="32" r="3" fill="#d4b07a"/>
+              <circle cx="56" cy="14" r="3" fill="#d4b07a"/>
+            </svg>
+            <span class="svc-panel__num">03</span>
+            <h3 class="svc-panel__title">Consulting &amp;<br/><em>Compliance</em></h3>
+            <p class="svc-panel__desc">Strategic advisory, regulatory compliance, and corporate governance solutions that keep businesses agile, protected, and ahead of the regulatory curve.</p>
+            <div class="svc-panel__tags">
+              <span class="svc-panel__tag">Regulatory Affairs</span>
+              <span class="svc-panel__tag">Corporate Governance</span>
+              <span class="svc-panel__tag">Risk Advisory</span>
+              <span class="svc-panel__tag">Tax Consulting</span>
+            </div>
+            <a href="services.html#consulting" class="svc-panel__cta">
+              <span class="svc-panel__cta-line"></span>
+              Learn more
+            </a>
+          </div>
+        </article>
+
+        <article class="svc-panel" data-index="3" aria-label="Co-Working Infrastructure">
+          <div class="svc-panel__inner">
+            <svg class="svc-panel__art" width="80" height="56" viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="4" y="4" width="72" height="48" stroke="#d4b07a" stroke-width="1" rx="1"/>
+              <line x1="4" y1="22" x2="52" y2="22" stroke="#d4b07a" stroke-width="0.6"/>
+              <line x1="52" y1="4" x2="52" y2="52" stroke="#d4b07a" stroke-width="0.6"/>
+              <rect x="10" y="10" width="16" height="10" stroke="#d4b07a" stroke-width="0.6" rx="1"/>
+              <rect x="32" y="10" width="14" height="10" stroke="#d4b07a" stroke-width="0.6" rx="1"/>
+              <rect x="10" y="28" width="36" height="18" stroke="#d4b07a" stroke-width="0.6" rx="1"/>
+            </svg>
+            <span class="svc-panel__num">04</span>
+            <h3 class="svc-panel__title">Co-Working<br/><em>Infrastructure</em></h3>
+            <p class="svc-panel__desc">Premium managed workspace solutions — private offices, shared desks, and enterprise-grade amenities designed for teams of any size and ambition.</p>
+            <div class="svc-panel__tags">
+              <span class="svc-panel__tag">Private Offices</span>
+              <span class="svc-panel__tag">Shared Desks</span>
+              <span class="svc-panel__tag">Virtual Office</span>
+              <span class="svc-panel__tag">Meeting Rooms</span>
+            </div>
+            <a href="services.html#coworking" class="svc-panel__cta">
+              <span class="svc-panel__cta-line"></span>
+              Learn more
+            </a>
+          </div>
+        </article>
+
+        <article class="svc-panel" data-index="4" aria-label="Digital Signatures & PKI">
+          <div class="svc-panel__inner">
+            <svg class="svc-panel__art" width="80" height="56" viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M40 4 L68 16 L68 36 Q40 52 40 52 Q40 52 12 36 L12 16 Z" stroke="#d4b07a" stroke-width="1" fill="none"/>
+              <circle cx="40" cy="26" r="8" stroke="#d4b07a" stroke-width="0.8" fill="none"/>
+              <rect x="36" y="31" width="8" height="6" rx="1" stroke="#d4b07a" stroke-width="0.7" fill="none"/>
+              <line x1="40" y1="28" x2="40" y2="34" stroke="#d4b07a" stroke-width="1"/>
+            </svg>
+            <span class="svc-panel__num">05</span>
+            <h3 class="svc-panel__title">Digital Signatures<br/>&amp; <em>PKI</em></h3>
+            <p class="svc-panel__desc">Certified digital signature solutions, public key infrastructure, and trust services ensuring legal compliance, document security, and transaction integrity.</p>
+            <div class="svc-panel__tags">
+              <span class="svc-panel__tag">DSC Certificates</span>
+              <span class="svc-panel__tag">PKI Solutions</span>
+              <span class="svc-panel__tag">e-Signing</span>
+              <span class="svc-panel__tag">Trust Services</span>
+            </div>
+            <a href="services.html#pki" class="svc-panel__cta">
+              <span class="svc-panel__cta-line"></span>
+              Learn more
+            </a>
+          </div>
+        </article>
+
+      </div><!-- /svc__right -->
+    </div><!-- /svc__wrapper -->
+  </section>
+
+  <!-- ══════════ WHY CURIOUSWORKS ══════════ -->
+  <section id="why-us" style="padding: var(--pad-section) var(--pad-x); background: var(--bg-card);">
+    <p class="svc__tag">03 — Why CuriousWorks</p>
+    <h2 class="about__h2">What sets us apart from working with multiple vendors</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; margin-top: 60px;">
+      
+      <div style="background: var(--bg-warm); padding: 40px; border-radius: 16px; border: 1px solid var(--border);">
+        <h3 style="color: var(--ink); font-family: var(--f-display); font-size: 28px; margin-bottom: 16px;">Integrated Solutions</h3>
+        <p style="color: var(--text-soft); line-height: 1.6;">All services coordinated under one team — no juggling multiple vendors or contracts.</p>
+      </div>
+
+      <div style="background: var(--bg-warm); padding: 40px; border-radius: 16px; border: 1px solid var(--border);">
+        <h3 style="color: var(--ink); font-family: var(--f-display); font-size: 28px; margin-bottom: 16px;">Experienced Professionals</h3>
+        <p style="color: var(--text-soft); line-height: 1.6;">Domain experts across legal, finance, technology, and operations working together.</p>
+      </div>
+
+      <div style="background: var(--bg-warm); padding: 40px; border-radius: 16px; border: 1px solid var(--border);">
+        <h3 style="color: var(--ink); font-family: var(--f-display); font-size: 28px; margin-bottom: 16px;">India & Global Reach</h3>
+        <p style="color: var(--text-soft); line-height: 1.6;">Serving domestic and international clients with compliant, scalable delivery.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ WHO WE SERVE ══════════ -->
+  <style>
+    /* Scoped styles */
+    .wws-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(32px, 5vw, 60px);
+    }
+
+    /* The sleek, non-clickable feature cards */
+    .wws-card {
+      padding: clamp(40px, 6vw, 60px) clamp(32px, 4vw, 48px);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.6s ease, background 0.6s ease;
+    }
+
+    .wws-card:hover {
+      background: rgba(255, 255, 255, 0.035);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Ambient corner glows based on brand colors */
+    .wws-card::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: -100px;
+      width: 300px; height: 300px;
+      background: var(--card-glow);
+      filter: blur(120px);
+      opacity: 0.15;
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .wws-card:hover::before { 
+      opacity: 0.25; 
+      transform: scale(1.1); 
+    }
+
+    /* Keeps content above the glow */
+    .wws-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+
+    .wws-h3 {
+      font-family: var(--f-display);
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 400; color: var(--cream);
+      margin-bottom: 24px; line-height: 1;
+      letter-spacing: -0.01em;
+    }
+
+    .wws-p {
+      font-family: var(--f-sans);
+      font-size: clamp(15px, 1.2vw, 17px);
+      font-weight: 300; line-height: 1.8;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 48px;
+    }
+
+    /* The new structural list */
+    .wws-features {
+      display: flex; flex-direction: column; 
+      gap: 0; margin-top: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .wws-feature {
+      display: flex; align-items: flex-start; gap: 20px;
+      padding: 24px 0; 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-family: var(--f-sans); font-size: clamp(15px, 1.2vw, 17px);
+      font-weight: 300; color: rgba(255, 255, 255, 0.75);
+    }
+
+    /* Minimal geometric bullet points */
+    .wws-feature::before {
+      content: '■';
+      font-size: 9px;
+      color: var(--card-glow);
+      opacity: 0.8;
+      transform: translateY(6px); /* Aligns perfectly with the text baseline */
+    }
+
+    @media (max-width: 900px) {
+      .wws-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <section id="who-we-serve" style="padding: var(--pad-section) var(--pad-x); background: var(--ink); color: var(--cream);">
+    <div class="wws-grid">
+      
+      <div class="wws-card" style="--card-glow: var(--gold);">
+        <div class="wws-content">
+          <h3 class="wws-h3">For <em style="color: var(--gold); font-style: italic;">Startups</em></h3>
+          <p class="wws-p">You're moving fast. We give you the compliance foundation, tech muscle, and workspace to launch and scale without distraction.</p>
+          
+          <div class="wws-features">
+            <div class="wws-feature">Speed and agile execution</div>
+            <div class="wws-feature">Compliance setup from day one</div>
+            <div class="wws-feature">First team and tools integration</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wws-card" style="--card-glow: var(--green);">
+        <div class="wws-content">
+          <h3 class="wws-h3">For <em style="color: var(--green); font-style: italic;">SMEs</em></h3>
+          <p class="wws-p">You're growing. We help you outsource non-core functions, stay on top of compliance, and modernise operations efficiently.</p>
+          
+          <div class="wws-features">
+            <div class="wws-feature">Scale operations efficiently</div>
+            <div class="wws-feature">Outsource non-core functions</div>
+            <div class="wws-feature">Optimise costs and overheads</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ TRUST SIGNALS ══════════ -->
+  <section id="trust" aria-label="Trust Signals and Testimonials">
+  
+  <div class="trust__image">
+    <img src="handshake.jpg" />
+  </div>
+  
+  <div class="trust__testimonial">
+    <blockquote class="trust__quote">
+      "CuriousWorks stepped in and completely streamlined our operations. They helped us get fully GST-compliant right before our Series A round, freeing us up to focus on growth."
+    </blockquote>
+    <div class="trust__author">
+      Client Name
+      <span>Designation, Company Name</span>
+    </div>
+  </div>
+</section>
+
+  <!-- ══════════ BOTTOM CTA BANNER ══════════ -->
+  <section id="bottom-cta" aria-labelledby="cta-heading">
+    <h2 class="cta__h2" id="cta-heading">Ready to Simplify Your<br><em>Business Operations?</em></h2>
+    <div class="cta__actions">
+      <a href="contact.html" class="cta__btn-primary" aria-label="Book a free consultation">Book a Consultation</a>
+      <a href="contact.html" class="cta__btn-secondary" aria-label="Contact our team">Contact Us</a>
+    </div>
+  </section>
+
+  <!-- ══════════ CAREERS BAND ══════════ -->
+  <aside class="careers-band" aria-label="Careers at CuriousWorks">
+    <a href="careers.html">Careers at CuriousWorks — Join the Curious Clan &rarr;</a>
+  </aside>
+
+  <!-- ══════════ CONTACT — Full-Bleed Void ══════════ -->
+  <section id="contact" aria-labelledby="contact-h2">
+    <div class="contact__inner">
+      
+      <div class="contact__head">
+        <p class="contact__tag">05 — Start a Project</p>
+        <h2 class="contact__h2" id="contact-h2" style="font-size: clamp(50px, 10vw, 150px);">Let's <em>talk</em> business.</h2>
+        <p style="font-family: var(--f-sans); font-size: 18px; color: var(--text-soft); max-width: 500px; margin: 24px auto 0; text-align: center;">Tell us what you need, we'll connect you with the right expert</p>
+      </div>
+
+      <div class="contact__body" style="margin-top: 40px;">
+        <!-- Updated Form -->
+        <form class="contact__form form-dark" id="contact-form" aria-label="Direct inquiry form" onsubmit="return false;">
+          <div class="form-row">
+            <div class="form-field">
+              <input type="text" id="cf-name" name="name" autocomplete="name" required />
+              <label for="cf-name">Full Name</label>
+            </div>
+            <div class="form-field">
+              <input type="email" id="cf-email" name="email" autocomplete="email" required />
+              <label for="cf-email">Email Address</label>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <input type="tel" id="cf-phone" name="phone" autocomplete="tel" required />
+              <label for="cf-phone">Phone Number</label>
+            </div>
+            <div class="form-field">
+              <input type="text" id="cf-company" name="company" autocomplete="organization" required />
+              <label for="cf-company">Company Name</label>
+            </div>
+          </div>
+
+          <div class="form-field" style="padding-top: 12px; border-bottom: 1px solid var(--border-med);">
+            <select id="cf-service" name="service" required style="width: 100%; background: transparent; border: none; color: var(--text-soft); font-family: var(--f-sans); font-size: 18px; font-weight: 300; padding: 20px 0 12px; outline: none; -webkit-appearance: none; cursor: pointer;">
+              <option value="" disabled selected>Service of Interest</option>
+              <option value="IT Services">IT Services</option>
+              <option value="BPO-KPO">BPO / KPO</option>
+              <option value="Consultancy">Consultancy (Priority)</option>
+              <option value="Co-working">Co-working</option>
+              <option value="Digital Signature">Digital Signature</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <textarea id="cf-msg" name="message" required></textarea>
+            <label for="cf-msg">Message / Brief</label>
+          </div>
+          
+          <div class="contact__submit-wrap">
+            <button type="submit" class="contact__submit" aria-label="Send message">
+              <span class="submit-line"></span>
+              Send Enquiry
+            </button>
+          </div>
+        </form>
+
+        <!-- Sidebar Details -->
+        <div class="contact__details-grid">
+          <a href="mailto:hello@curiousworks.in" class="c-detail">
+            <span class="c-detail-lbl">Email</span>
+            <span class="c-detail-val">hello@curiousworks.in</span>
+          </a>
+          <a href="tel:+910000000000" class="c-detail">
+            <span class="c-detail-lbl">Phone</span>
+            <span class="c-detail-val">+91 — — — — — — — —</span>
+          </a>
+          <div class="c-detail">
+            <span class="c-detail-lbl">Location</span>
+            <span class="c-detail-val">Bangalore, India</span>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer id="footer" role="contentinfo">
+  <div class="footer__top">
+    <div>
+      <p class="footer__logo">Curious Works</p>
+      <p class="footer__strapline">One partner for technology, operations, compliance, workspace, and security.</p>
+    </div>
+    <div class="footer__col">
+      <p class="footer__col-title">Company</p>
+      <ul>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="about.html#mission">Mission</a></li>
+        <li><a href="about.html#vision">Vision</a></li>
+        <li><a href="careers.html">Careers</a></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <p class="footer__col-title">Services</p>
+      <ul>
+        <li><a href="services.html#it-digital">IT &amp; Digital</a></li>
+        <li><a href="services.html#bpo-kpo">BPO &amp; KPO</a></li>
+        <li><a href="services.html#consulting">Consulting</a></li>
+        <li><a href="services.html#coworking">Co-Working</a></li>
+        <li><a href="services.html#pki">PKI &amp; DSC</a></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <p class="footer__col-title">Connect</p>
+      <ul>
+        <li><a href="associates.html">Associates</a></li>
+        <li><a href="contact.html">Contact Us</a></li>
+        <li><a href="contact.html#inquiry">Direct Inquiry</a></li>
+        <li><a href="contact.html#location">Find Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <p class="footer__copy">© 2026 Curious Works. All rights reserved.</p>
+    <div class="footer__bottom-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ══ CURSOR ══ */
+const dot = document.getElementById('cur-dot');
+const ring = document.getElementById('cur-ring');
+let mx=window.innerWidth/2, my=window.innerHeight/2, rx=mx, ry=my;
+document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; dot.style.left=mx+'px'; dot.style.top=my+'px'; });
+(function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+document.querySelectorAll('a,button,.svc-panel,.svc__dot-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('c-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('c-hover'));
+});
+
+
+/* ══ LENIS + GSAP ══ */
+const lenis = new Lenis({duration:1.3, easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)), smoothWheel:true});
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add(t=>lenis.raf(t*1000));
+gsap.ticker.lagSmoothing(0);
+
+/* ══ PRELOADER ══ */
+(function(){
+  const bar = document.getElementById('pl-bar');
+  const num = document.getElementById('pl-num');
+  const marks = document.querySelectorAll('.pl__mark span');
+  gsap.to(marks,{y:0,duration:.9,ease:'expo.out',stagger:.06,delay:.1});
+  gsap.to({},{
+    duration:2.0, ease:'power2.inOut',
+    onUpdate:function(){
+      const p=Math.round(this.progress()*100);
+      num.textContent=p+'%';
+      gsap.set(bar,{scaleX:this.progress()});
+    },
+    onComplete(){
+      gsap.timeline()
+        .to('#preloader',{opacity:0,duration:.5,ease:'expo.in',onComplete(){ document.getElementById('preloader').style.display='none'; }})
+        .add(runPageAnimations,'-=0.1');
+    }
+  });
+})();
+
+/* ══ PAGE ANIMATIONS ══ */
+function runPageAnimations(){
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.to('#progress',{scaleX:1,ease:'none',scrollTrigger:{start:'top top',end:'bottom bottom',scrub:.3}});
+
+  ScrollTrigger.create({start:60,
+    onEnter:()=>document.getElementById('nav').classList.add('solid'),
+    onLeaveBack:()=>document.getElementById('nav').classList.remove('solid')
+  });
+
+  /* Hero */
+  gsap.to('.ln-inner',{y:0,duration:1.4,ease:'expo.out',stagger:.12,delay:.3});
+  gsap.to('.hero__cta',{opacity:1,duration:1,ease:'expo.out',delay:1.1});
+  gsap.to('.hero__scroll',{opacity:1,duration:1,ease:'expo.out',delay:1.5});
+
+  /* Reveal helper */
+  const reveal = (el, extra={}) => gsap.from(el, {
+    scrollTrigger:{trigger:el,start:'top 82%'},
+    opacity:0, y:36, duration:1, ease:'expo.out', ...extra
+  });
+
+  /* About */
+  reveal('.about__tag');
+  reveal('.about__h2',{delay:.1});
+  reveal('.about__link',{delay:.2});
+  reveal('.about__body');
+  gsap.from('.stat',{scrollTrigger:{trigger:'.about__stats',start:'top 85%'},opacity:0,y:28,duration:.9,ease:'expo.out',stagger:.08});
+
+  /* Services */
+  reveal('.svc__left');
+
+  /* Contact */
+  reveal('.contact__tag');
+  reveal('.contact__h2',{delay:.1});
+  gsap.from('.contact__row',{scrollTrigger:{trigger:'.contact__info',start:'top 85%'},opacity:0,y:20,duration:.8,ease:'expo.out',stagger:.1});
+  gsap.from('.form-field',{scrollTrigger:{trigger:'.contact__form',start:'top 88%'},opacity:0,y:24,duration:.8,ease:'expo.out',stagger:.08});
+  reveal('.contact__submit',{delay:.4});
+
+  /* Footer */
+  gsap.from('.footer__logo,.footer__strapline',{scrollTrigger:{trigger:'#footer',start:'top 90%'},opacity:0,y:20,duration:.9,ease:'expo.out',stagger:.08});
+}
+
+/* ══ SERVICES — scroll-spy (Sticky Deck Fix) ══ */
+(function(){
+  const panels = document.querySelectorAll('.svc-panel');
+  const dotRows = document.querySelectorAll('.svc__dot-row');
+  if (!panels.length || typeof ScrollTrigger === 'undefined') return;
+
+  // Function to update the left menu
+  function setActive(idx){
+    dotRows.forEach((r,i) => {
+      if (i === idx) {
+        r.classList.add('active');
+      } else {
+        r.classList.remove('active');
+      }
+    });
+  }
+
+  // Use GSAP ScrollTrigger to precisely track the stacking cards
+  panels.forEach((panel, i) => {
+    ScrollTrigger.create({
+      trigger: panel,
+      start: "top 45%", // Triggers right before the card hits the stack
+      onEnter: () => setActive(i),       // Scrolling down
+      onEnterBack: () => setActive(i)    // Scrolling up (Fixes the glitch!)
+    });
+  });
+
+  // Click a label to smoothly scroll to that specific card
+  dotRows.forEach((row, i) => {
+    row.addEventListener('click', () => {
+      // Calculate where the card lives on the page
+      const offset = panels[i].getBoundingClientRect().top + window.scrollY;
+      
+      // Scroll to it, subtracting a little bit so it doesn't clip the top
+      window.scrollTo({
+        top: offset - (window.innerHeight * 0.1), 
+        behavior: 'smooth'
+      });
+    });
+  });
+})();
+
+/* ══ MOBILE HAMBURGER ══ */
+(function(){
+  const btn=document.getElementById('ham-btn');
+  const menu=document.getElementById('mobile-menu');
+  if(!btn||!menu) return;
+  btn.addEventListener('click',()=>{
+    const isOpen=document.body.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded',isOpen);
+    menu.setAttribute('aria-hidden',!isOpen);
+  });
+  document.querySelectorAll('.mob-link').forEach(l=>{
+    l.addEventListener('click',()=>{
+      document.body.classList.remove('menu-open');
+      btn.setAttribute('aria-expanded','false');
+      menu.setAttribute('aria-hidden','true');
+    });
+  });
+})();
+
+/* ══ PAGE TRANSITIONS ══ */
+(function(){
+  const ov=document.getElementById('page-overlay');
+  document.querySelectorAll('a[href]').forEach(a=>{
+    const h=a.getAttribute('href');
+    if(!h||h.startsWith('#')||h.startsWith('http')||h.startsWith('mailto')||h.startsWith('tel')) return;
+    a.addEventListener('click',e=>{
+      e.preventDefault(); const dest=a.href;
+      gsap.to(ov,{scaleY:1,transformOrigin:'bottom',duration:.6,ease:'expo.inOut',onComplete(){ window.location=dest; }});
+    });
+  });
+})();
+
+/* ══ CONTACT FORM ══ */
+document.getElementById('contact-form').addEventListener('submit',function(e){
+  e.preventDefault();
+  const btn=this.querySelector('.contact__submit');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<span class="submit-line"></span>Sent — thank you.';
+  btn.style.color='var(--gold)';
+  setTimeout(()=>{ btn.innerHTML=orig; btn.style.color=''; },3500);
+});
+
+/* ══ MAGNETIC SUBMIT BUTTON ══ */
+(function(){
+  const btn = document.querySelector('.contact__submit');
+  if(!btn) return;
+  
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    // Calculate distance from center of the button
+    const x = (e.clientX - rect.left) - rect.width / 2;
+    const y = (e.clientY - rect.top) - rect.height / 2;
+    
+    // Pull the button towards the cursor
+    gsap.to(btn, { 
+      x: x * 0.4, 
+      y: y * 0.4, 
+      duration: 0.4, 
+      ease: 'power2.out' 
+    });
+  });
+  
+  btn.addEventListener('mouseleave', () => {
+    // Snap back to origin with a slight elastic bounce
+    gsap.to(btn, { 
+      x: 0, 
+      y: 0, 
+      duration: 0.8, 
+      ease: 'elastic.out(1, 0.4)' 
+    });
+  });
+})();
+
+</script>
+</body>
+</html>
